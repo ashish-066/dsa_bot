@@ -2,7 +2,5 @@ services:
   - type: worker
     name: dsa-discord-bot
     runtime: python
+    buildCommand: ""
     startCommand: "python bot.py"
-    envVars:
-      - key: TOKEN
-        sync: false
