@@ -1,6 +1,6 @@
 services:
   - type: worker
     name: dsa-discord-bot
-    runtime: python
-    buildCommand: ""
+    env: python
+    plan: free
     startCommand: "python bot.py"
