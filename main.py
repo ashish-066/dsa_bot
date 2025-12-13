@@ -1,81 +1,63 @@
 import discord
-import re
+from discord import app_commands
 import requests
 import os
 from datetime import datetime
 
-WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxEjJHTd6gvXOyxXkAKCwSKNnDbNYIhYYh9fmBB47_9f5qSN2r3r_XcirpC76-o4mWfRw/exec"
+WEBHOOK_URL = "YOUR_WEBHOOK_URL"
 TOKEN = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
-intents.message_content = True
-
 client = discord.Client(intents=intents)
-
-def extract(pattern, text):
-    match = re.search(pattern, text)
-    return match.group(1).strip() if match else None
+tree = app_commands.CommandTree(client)
 
 @client.event
 async def on_ready():
+    await tree.sync()
     print(f"Bot logged in as {client.user}")
+    print("Slash commands synced")
 
-@client.event
-async def on_message(message):
-    if message.author.bot:
-        return
+@tree.command(name="dsa", description="Log daily DSA progress")
+async def dsa(
+    interaction: discord.Interaction,
+    day: int,
 
-    if message.content.startswith("!dsa"):
-        text = message.content
-        
-        day   = extract(r"Day:\s*(\d+)", text)
+    problem1: str,
+    time1: int,
 
-        p1    = extract(r"P1:\s*(.+)", text)
-        diff1 = extract(r"Diff1:\s*(.+)", text)
-        time1 = extract(r"Time1:\s*(\d+)", text)
+    problem2: str,
+    time2: int,
 
-        p2    = extract(r"P2:\s*(.+)", text)
-        diff2 = extract(r"Diff2:\s*(.+)", text)
-        time2 = extract(r"Time2:\s*(\d+)", text)
+    problem3: str,
+    time3: int,
 
-        p3    = extract(r"P3:\s*(.+)", text)
-        diff3 = extract(r"Diff3:\s*(.+)", text)
-        time3 = extract(r"Time3:\s*(\d+)", text)
+    notes: str = ""
+):
+    data = {
+        "date": datetime.now().strftime("%Y-%m-%d"),
+        "day": day,
 
-        notes = extract(r"Notes:\s*(.+)", text) or ""
-        completed = extract(r"Completed:\s*(Y|N)", text) or "Y"
+        "problem1": problem1,
+        "time1": time1,
 
-        # Validate
-        if not all([day, p1, diff1, time1, p2, diff2, time2, p3, diff3, time3]):
-            await message.reply("❌ Invalid format. Missing fields.")
-            return
+        "problem2": problem2,
+        "time2": time2,
 
-        data = {
-            "date": datetime.now().strftime("%Y-%m-%d"),
-            "day": int(day),
+        "problem3": problem3,
+        "time3": time3,
 
-            "problem1": p1,
-            "diff1": diff1,
-            "time1": int(time1),
+        "notes": notes
+    }
 
-            "problem2": p2,
-            "diff2": diff2,
-            "time2": int(time2),
+    r = requests.post(WEBHOOK_URL, json=data)
 
-            "problem3": p3,
-            "diff3": diff3,
-            "time3": int(time3),
-
-            "notes": notes,
-            "completed": completed
-        }
-
-        r = requests.post(WEBHOOK_URL, json=data)
-
-        if r.status_code == 200:
-            await message.reply("🔥 DSA Updated Successfully!")
-        else:
-            await message.reply("❌ Failed to update Google Sheet.")
+    if r.status_code == 200:
+        await interaction.response.send_message(
+            "🔥 DSA logged successfully!", ephemeral=True
+        )
+    else:
+        await interaction.response.send_message(
+            "❌ Failed to update Google Sheet.", ephemeral=True
+        )
 
 client.run(TOKEN)
-
