@@ -1,16 +1,20 @@
 import discord
 import re
-import json
 import requests
 import os
+from datetime import datetime
 
-WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxEjJHTd6gvXOyxXkAKCwSKNnDbNYIhYYh9fmBB47_9f5qSN2r3r_XcirpC76-o4mWfRw/exec"
+WEBHOOK_URL = "YOUR_WEBHOOK_URL"
 TOKEN = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
+
+def extract(pattern, text):
+    match = re.search(pattern, text)
+    return match.group(1).strip() if match else None
 
 @client.event
 async def on_ready():
@@ -23,31 +27,47 @@ async def on_message(message):
 
     if message.content.startswith("!dsa"):
         text = message.content
+        
+        day   = extract(r"Day:\s*(\d+)", text)
 
-        day = re.search(r"Day:\s*(\d+)", text)
-        p1 = re.search(r"P1:\s*(.*?),\s*(.*?),\s*(\d+)", text)
-        p2 = re.search(r"P2:\s*(.*?),\s*(.*?),\s*(\d+)", text)
-        p3 = re.search(r"P3:\s*(.*?),\s*(.*?),\s*(\d+)", text)
-        notes = re.search(r"Notes:\s*(.*)", text)
+        p1    = extract(r"P1:\s*(.+)", text)
+        diff1 = extract(r"Diff1:\s*(.+)", text)
+        time1 = extract(r"Time1:\s*(\d+)", text)
 
-        if not (day and p1 and p2 and p3):
-            await message.reply("❌ Invalid format. Use:\n```\n!dsa\nDay: 1\nP1: name, diff, time\nP2: name, diff, time\nP3: name, diff, time\nNotes: text\n```")
+        p2    = extract(r"P2:\s*(.+)", text)
+        diff2 = extract(r"Diff2:\s*(.+)", text)
+        time2 = extract(r"Time2:\s*(\d+)", text)
+
+        p3    = extract(r"P3:\s*(.+)", text)
+        diff3 = extract(r"Diff3:\s*(.+)", text)
+        time3 = extract(r"Time3:\s*(\d+)", text)
+
+        notes = extract(r"Notes:\s*(.+)", text) or ""
+        completed = extract(r"Completed:\s*(Y|N)", text) or "Y"
+
+        # Validate
+        if not all([day, p1, diff1, time1, p2, diff2, time2, p3, diff3, time3]):
+            await message.reply("❌ Invalid format. Missing fields.")
             return
 
         data = {
-            "day": int(day.group(1)),
-            "date": "AUTO",
-            "problem1": p1.group(1),
-            "diff1": p1.group(2),
-            "time1": int(p1.group(3)),
-            "problem2": p2.group(1),
-            "diff2": p2.group(2),
-            "time2": int(p2.group(3)),
-            "problem3": p3.group(1),
-            "diff3": p3.group(2),
-            "time3": int(p3.group(3)),
-            "notes": notes.group(1) if notes else "",
-            "completed": "Y"
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "day": int(day),
+
+            "problem1": p1,
+            "diff1": diff1,
+            "time1": int(time1),
+
+            "problem2": p2,
+            "diff2": diff2,
+            "time2": int(time2),
+
+            "problem3": p3,
+            "diff3": diff3,
+            "time3": int(time3),
+
+            "notes": notes,
+            "completed": completed
         }
 
         r = requests.post(WEBHOOK_URL, json=data)
