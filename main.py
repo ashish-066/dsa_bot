@@ -4,7 +4,7 @@ import requests
 import os
 from datetime import datetime
 
-WEBHOOK_URL = "YOUR_WEBHOOK_URL"
+WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxEjJHTd6gvXOyxXkAKCwSKNnDbNYIhYYh9fmBB47_9f5qSN2r3r_XcirpC76-o4mWfRw/exec"
 TOKEN = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
@@ -61,3 +61,4 @@ async def dsa(
         )
 
 client.run(TOKEN)
+
