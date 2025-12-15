@@ -7,10 +7,10 @@ import aiosqlite
 from database import init_db, DB_NAME
 from leetcode import solved_today, fetch_problem_difficulty
 
-TOKEN = os.getenv("TOKEN")  
-REMINDER_CHANNEL_ID = 1364659877007327436 
+TOKEN = os.getenv("TOKEN")   
+REMINDER_CHANNEL_ID = 1449955258150162462 
 POINTS = {"Easy": 10, "Medium": 20, "Hard": 30}
-
+DAILY_POINT_LIMIT = 5
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -31,15 +31,16 @@ async def register(ctx, leetcode_username: str):
             (str(ctx.author.id), leetcode_username)
         )
         await db.commit()
-    await ctx.send("LeetCode username registered")
+    await ctx.send(" LeetCode username registered")
 
 @bot.command()
 async def submit(ctx, problem_url: str):
     slug = problem_url.rstrip("/").split("/")[-1]
     discord_id = str(ctx.author.id)
-    today = str(datetime.now().date())
+    today = datetime.now().date().isoformat()
 
     async with aiosqlite.connect(DB_NAME) as db:
+        # Fetch user
         cur = await db.execute(
             "SELECT leetcode_username, streak, last_active_date FROM users WHERE discord_id=?",
             (discord_id,)
@@ -47,24 +48,48 @@ async def submit(ctx, problem_url: str):
         user = await cur.fetchone()
 
         if not user:
-            await ctx.send(" Register first using `/register <username>`")
+            await ctx.send("Register first using `/register <leetcode_username>`")
             return
 
         username, streak, last_date = user
 
-        if not solved_today(username, slug):
-            await ctx.send(" No accepted submission today on LeetCode")
+        cur = await db.execute("""
+            SELECT 1 FROM submissions
+            WHERE discord_id=? AND problem_slug=? AND submission_date=?
+        """, (discord_id, slug, today))
+        if await cur.fetchone():
+            await ctx.send(" You already submitted this problem today")
             return
 
-        difficulty = fetch_problem_difficulty(slug)
-        points = POINTS[difficulty]
+        # Verify with LeetCode
+        try:
+            if not solved_today(username, slug):
+                await ctx.send(" No accepted submission today on LeetCode")
+                return
+            difficulty = fetch_problem_difficulty(slug)
+        except Exception:
+            await ctx.send("LeetCode error. Try again later.")
+            return
+
+        cur = await db.execute("""
+            SELECT COUNT(*) FROM submissions
+            WHERE discord_id=? AND submission_date=?
+        """, (discord_id, today))
+        count_today = (await cur.fetchone())[0]
+
+        if count_today < DAILY_POINT_LIMIT:
+            reward_points = POINTS[difficulty]
+            reward_msg = f"+{reward_points} points"
+        else:
+            reward_points = 0
+            reward_msg = "No points (daily limit reached)"
 
         if last_date == today:
             new_streak = streak
         elif last_date:
-            days_gap = (datetime.fromisoformat(today) -
-                        datetime.fromisoformat(last_date)).days
-            new_streak = streak + 1 if days_gap == 1 else 1
+            gap = (datetime.fromisoformat(today) -
+                   datetime.fromisoformat(last_date)).days
+            new_streak = streak + 1 if gap == 1 else 1
         else:
             new_streak = 1
 
@@ -79,15 +104,16 @@ async def submit(ctx, problem_url: str):
                 streak = ?,
                 last_active_date = ?
             WHERE discord_id = ?
-        """, (points, new_streak, today, discord_id))
+        """, (reward_points, new_streak, today, discord_id))
 
         await db.commit()
 
     await ctx.send(
-        f"**Verified**\n"
+        f" **Verified**\n"
         f"Difficulty: `{difficulty}`\n"
-        f"+{points} points\n"
-        f" Streak: {new_streak}"
+        f"{reward_msg}\n"
+        f" Streak: {new_streak}\n"
+        f" Today: {count_today + 1}/{DAILY_POINT_LIMIT}"
     )
 
 @bot.command()
@@ -106,7 +132,7 @@ async def leaderboard(ctx):
 
     msg = " **Leaderboard**\n\n"
     for i, r in enumerate(rows, start=1):
-        msg += f"{i}. `{r[0]}` — {r[1]} pts | 🔥 {r[2]}\n"
+        msg += f"{i}. `{r[0]}` — {r[1]} pts |  {r[2]}\n"
 
     await ctx.send(msg)
 
@@ -116,11 +142,9 @@ async def daily_reminder():
     channel = bot.get_channel(REMINDER_CHANNEL_ID)
     if channel:
         await channel.send(
-            "⏰ **Daily Reminder**\n"
+            " **Daily Reminder**\n"
             "Solve at least **1 LeetCode problem today** to keep your streak alive \n"
-            "After solving, use:\n"
-            "`/submit <problem_url>`"
+            "Use `/submit <problem_url>` after solving."
         )
 
 bot.run(TOKEN)
-
