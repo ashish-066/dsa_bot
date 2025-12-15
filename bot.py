@@ -9,6 +9,7 @@ from leetcode import solved_today, fetch_problem_difficulty
 
 TOKEN = os.getenv("TOKEN")   
 REMINDER_CHANNEL_ID = 1449955258150162462 
+WELCOME_CHANNEL=1449955223702343855
 POINTS = {"Easy": 10, "Medium": 15, "Hard": 22}
 DAILY_POINT_LIMIT = 5
 
@@ -22,6 +23,15 @@ async def on_ready():
     await init_db()
     daily_reminder.start()
     print("Bot is online")
+@bot.event
+async def on_member_join(member):
+    channel = bot.get_channel(WELCOME_CHANNEL) 
+    if channel:
+        await channel.send(
+            f"👋 Welcome {member.mention}!\n\n"
+            "Glad to have you here \n"
+            
+        )
 
 @bot.command()
 async def register(ctx, leetcode_username: str):
@@ -148,5 +158,6 @@ async def daily_reminder():
         )
 
 bot.run(TOKEN)
+
 
 
