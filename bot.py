@@ -50,7 +50,6 @@ async def submit(ctx, problem_url: str):
     today = datetime.now().date().isoformat()
 
     async with aiosqlite.connect(DB_NAME) as db:
-        # Fetch user
         cur = await db.execute(
             "SELECT leetcode_username, streak, last_active_date FROM users WHERE discord_id=?",
             (discord_id,)
@@ -69,7 +68,7 @@ async def submit(ctx, problem_url: str):
 """, (discord_id, slug))
 
         if await cur.fetchone():
-            await ctx.send("❌ This problem was already submitted earlier. Duplicate work is not allowed.")
+            await ctx.send("This problem was already submitted earlier. Duplicate work is not allowed.")
             return
 
         try:
@@ -158,6 +157,7 @@ async def daily_reminder():
         )
 
 bot.run(TOKEN)
+
 
 
 
