@@ -54,14 +54,14 @@ async def submit(ctx, problem_url: str):
         username, streak, last_date = user
 
         cur = await db.execute("""
-            SELECT 1 FROM submissions
-            WHERE discord_id=? AND problem_slug=? AND submission_date=?
-        """, (discord_id, slug, today))
+    SELECT 1 FROM submissions
+    WHERE discord_id=? AND problem_slug=?
+""", (discord_id, slug))
+
         if await cur.fetchone():
-            await ctx.send(" You already submitted this problem today")
+            await ctx.send("❌ This problem was already submitted earlier. Duplicate work is not allowed.")
             return
 
-        # Verify with LeetCode
         try:
             if not solved_today(username, slug):
                 await ctx.send(" No accepted submission today on LeetCode")
@@ -148,4 +148,5 @@ async def daily_reminder():
         )
 
 bot.run(TOKEN)
+
 
