@@ -1,13 +1,12 @@
-# DSA Discipline Bot 🚀
+# DSA Discipline Bot 
 
-A strict Discord bot that enforces daily DSA consistency using **verified LeetCode submissions**.
+A strict Discord bot that enforces daily DSA consistency.
 
-This is **not** a casual tracker.  
-This system is designed to reward **discipline, honesty, and consistency**.
+This is designed to reward **discipline, honesty, and consistency**.
 
 ---
 
-## 🔥 What This Bot Does
+##  What This Bot Does
 
 - Verifies problems directly from **LeetCode**
 - Accepts only **Accepted** submissions
@@ -17,8 +16,6 @@ This system is designed to reward **discipline, honesty, and consistency**.
 - Tracks streaks automatically
 - Sends a daily reminder at **9:00 PM IST**
 
-No screenshots.  
-No manual checking.  
 No excuses.
 
 ---
@@ -46,14 +43,11 @@ Register your Discord account with your LeetCode profile.
 
 /register <leetcode_username>
 
-makefile
-Copy code
 
 Example:
 /register john_doe
 
-yaml
-Copy code
+
 
 ---
 
@@ -62,14 +56,10 @@ Submit a problem you solved **today**.
 
 /submit <leetcode_problem_url>
 
-makefile
-Copy code
 
 Example:
 /submit https://leetcode.com/problems/two-sum/
 
-yaml
-Copy code
 
 Conditions:
 - Must be **Accepted**
@@ -83,8 +73,6 @@ View rankings based on total points and streaks.
 
 /leaderboard
 
-yaml
-Copy code
 
 ---
 
@@ -93,8 +81,8 @@ Copy code
 | Difficulty | Points |
 |-----------|--------|
 | Easy      | 10     |
-| Medium    | 20     |
-| Hard      | 30     |
+| Medium    | 15     |
+| Hard      | 22     |
 
 ### Important Notes
 
@@ -104,16 +92,7 @@ Copy code
 
 ---
 
-## ⛔ What This Bot Does NOT Track
 
-- Time spent solving problems
-- Solution quality
-- Whether you copied or not
-- Revision attempts
-
-This system measures **discipline and consistency**, not effort.
-
----
 
 ## ⏰ Daily Reminder
 
@@ -130,28 +109,12 @@ If you are looking for:
 - Manual overrides
 - Excuses
 
-This bot is **not for you**.
+This bot is wont allow you .
+---
 
+##A FINAL WORD FOR EVERYONE
 Consistency beats motivation.  
 Discipline beats talent.
 
 ---
 
-## 🛠️ Tech Stack (For Developers)
-
-- Python
-- discord.py
-- SQLite (persistent storage)
-- LeetCode GraphQL (read-only verification)
-
----
-
-## 📌 Summary
-
-- Real verification
-- Zero manual admin work
-- No duplicate farming
-- No leaderboard inflation
-- No shortcuts
-
-Show up daily or fall behind.
