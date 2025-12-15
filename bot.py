@@ -9,7 +9,7 @@ from leetcode import solved_today, fetch_problem_difficulty
 
 TOKEN = os.getenv("TOKEN")   
 REMINDER_CHANNEL_ID = 1449955258150162462 
-POINTS = {"Easy": 10, "Medium": 20, "Hard": 30}
+POINTS = {"Easy": 10, "Medium": 15, "Hard": 22}
 DAILY_POINT_LIMIT = 5
 
 intents = discord.Intents.default()
@@ -148,3 +148,4 @@ async def daily_reminder():
         )
 
 bot.run(TOKEN)
+
