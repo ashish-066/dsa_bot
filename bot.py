@@ -13,6 +13,8 @@ POINTS = {"Easy": 10, "Medium": 20, "Hard": 30}
 
 
 intents = discord.Intents.default()
+intents.message_content = True
+
 bot = commands.Bot(command_prefix="/", intents=intents)
 
 @bot.event
@@ -121,3 +123,4 @@ async def daily_reminder():
         )
 
 bot.run(TOKEN)
+
