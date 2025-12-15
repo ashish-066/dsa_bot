@@ -1,6 +1,7 @@
 import aiosqlite
 
-DB_NAME = "dsa.db"
+DB_NAME = "/data/dsa.db"
+
 
 async def init_db():
     async with aiosqlite.connect(DB_NAME) as db:
